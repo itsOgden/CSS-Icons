@@ -325,7 +325,6 @@ async function watch() {
     await build()
     fs.watch(iconDir, { recursive: true }, (eventType, filename) => {
         if (!filename?.toLowerCase().endsWith('.svg')) return
-        if (!timer) console.log(`[css-icons] changed: ${filename}, rebuilding...`)
         rerun()
     })
     console.log('[css-icons] watching for svg changes...')
