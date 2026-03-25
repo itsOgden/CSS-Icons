@@ -61,7 +61,12 @@ function svgToDataUri(svg: string) {
 
 export function generateTypeDeclaration(icons: IconRecord[]): string {
     const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
-    return `declare module 'virtual:css-icons/data' {\n  export type CssIconName =\n${typeNames}\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
+    return `import type { CssIconName } from './css-icons-types'\n\ndeclare module 'virtual:css-icons/data' {\n  export type { CssIconName }\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
+}
+
+export function generateTypesFile(icons: IconRecord[]): string {
+    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
+    return `export type CssIconName =\n${typeNames}\n`
 }
 
 function generateVirtualModule(icons: IconRecord[]): string {

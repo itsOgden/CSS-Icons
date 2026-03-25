@@ -1,5 +1,5 @@
 import { defineNuxtModule, addComponent, createResolver, addTypeTemplate } from '@nuxt/kit'
-import { CssIconsPlugin, generateTypeDeclaration, buildIconsFromConfig } from './unplugin'
+import { CssIconsPlugin, generateTypeDeclaration, generateTypesFile, buildIconsFromConfig, generateCssFromConfig } from './unplugin'
 import fs from 'fs'
 import path from 'path'
 import type { CssIconsOptions } from './unplugin'
@@ -35,6 +35,11 @@ export default defineNuxtModule<CssIconsOptions>({
         addTypeTemplate({
             filename: 'types/css-icons.d.ts',
             getContents: () => generateTypeDeclaration(icons),
+        })
+
+        addTypeTemplate({
+            filename: 'types/css-icons-types.ts',
+            getContents: () => generateTypesFile(icons),
         })
 
         // Include generated type declaration
