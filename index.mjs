@@ -10,7 +10,7 @@ const command = args[0]
 // ─── Init ────────────────────────────────────────────────────────────────────
 
 const PLUGIN_DEST = 'plugins/css-icons.ts'
-const CONFIG_DEST = 'css-icon.config.mjs'
+const CONFIG_DEST = 'css-icons.config.mjs'
 
 const PLUGIN_CONTENT = `import { defineNuxtPlugin } from '#app'
 import { defineComponent, h, type PropType } from 'vue'
@@ -78,7 +78,27 @@ async function init() {
     } else {
         const ans = await prompt(rl, `${info()} Create ${CONFIG_DEST}? (Y/n): `)
         if (ans.trim().toLowerCase() !== 'n') {
-            fs.writeFileSync(configPath, CONFIG_CONTENT, 'utf8')
+            const iconFolder = await prompt(rl, `${info()} Icon folder path (default: ./assets/icons): `)
+            const defaultFolder = await prompt(rl, `${info()} Default folder name, omitted from icon names (default: duotone): `)
+            const outDir = await prompt(rl, `${info()} Output directory for generated files (default: ./plugins/css-icons): `)
+
+            const configContent = `export default {
+  // Where your SVG files live
+  iconFolder: '${iconFolder.trim() || './assets/icons'}',
+
+  // SVGs inside this folder won't have the folder name appended to their icon name.
+  // e.g. duotone/gear.svg becomes 'duotone-gear' not 'duotone-gear-duotone'
+  defaultFolder: '${defaultFolder.trim() || 'duotone'}',
+
+  // Where to write the generated css-icon.css and icons.ts files.
+  // This folder should be committed to your repo.
+  outDir: '${outDir.trim() || './plugins/css-icons'}',
+
+  // Optional: folders whose icons use background-image instead of mask (for full-color SVGs)
+  // backgroundFolders: ['colored'],
+}
+`
+            fs.writeFileSync(configPath, configContent, 'utf8')
             console.log(`${checkMark()} Created ${CONFIG_DEST}`)
         } else {
             console.log(`${warn()} Skipped ${CONFIG_DEST} — you'll need to create it manually.`)
@@ -165,13 +185,26 @@ ${warn()} One manual step required — add the generated CSS to your nuxt.config
 `)
 
     rl.close()
-    console.log(`\x1b[1mDone!\x1b[0m Run \x1b[36mpnpm css-icons\x1b[0m to generate your icon files.\n`)
+
+    // ── Initial build ────────────────────────────────────────────────────────────
+    if (fs.existsSync(path.join(cwd, CONFIG_DEST))) {
+        const ans2 = await new Promise((resolve) => {
+            const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout })
+            rl2.question(`${info()} Run initial icon build now? (Y/n): `, (a) => { rl2.close(); resolve(a) })
+        })
+        if (ans2.trim().toLowerCase() !== 'n') {
+            console.log('\n[css-icons] running initial build...')
+            await build()
+        }
+    }
+
+    console.log(`\n\x1b[1mDone!\x1b[0m Run \x1b[36mpnpm css-icons\x1b[0m to regenerate at any time.\n`)
 }
 
 // ─── Build / Watch ────────────────────────────────────────────────────────────
 
 async function loadConfig() {
-    const candidates = ['css-icon.config.mjs', 'css-icon.config.js']
+    const candidates = ['css-icons.config.mjs', 'css-icons.config.js']
     for (const file of candidates) {
         const full = path.join(cwd, file)
         if (fs.existsSync(full)) {
@@ -179,7 +212,7 @@ async function loadConfig() {
             return mod.default || mod
         }
     }
-    throw new Error('Could not find css-icon.config.mjs — run `pnpm css-icons init` first')
+    throw new Error('Could not find css-icons.config.mjs — run `pnpm css-icons init` first')
 }
 
 function pathToFileUrl(filePath) {
