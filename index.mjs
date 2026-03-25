@@ -147,11 +147,11 @@ async function init() {
             if (ans.trim().toLowerCase() !== 'n') {
                 if (process.platform === 'win32') {
                     pkg.scripts['dev'] = `concurrently "pnpm css-icons --watch" "${pkg.scripts['dev']}"`
+                    pkg.devDependencies = pkg.devDependencies || {}
+                    pkg.devDependencies['concurrently'] = 'latest'
                     changed = true
                     console.log(`${checkMark()} Patched "dev" script (Windows — using concurrently)`)
-                    console.log(`${info()} Installing concurrently...`)
-                    const { execSync } = await import('child_process')
-                    execSync('pnpm add -D concurrently', { stdio: 'inherit', cwd })
+                    console.log(`${warn()} Run pnpm install to complete concurrently installation`)
                 } else {
                     pkg.scripts['dev'] = `pnpm css-icons --watch & ${pkg.scripts['dev']}`
                 }
