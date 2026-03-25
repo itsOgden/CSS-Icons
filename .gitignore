@@ -86,3 +86,10 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+
+# pnpm files
+pnpm-lock.yaml
+pnpm-workspace.yaml
+
+# jetbrains files
+.idea

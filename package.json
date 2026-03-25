@@ -1,0 +1,26 @@
+{
+  "name": "@itsogden/css-icons",
+  "version": "1.0.0",
+  "description": "SVG-to-CSS icon generator with Vue 3 / Nuxt 3 component",
+  "type": "module",
+  "bin": {
+    "css-icons": "./index.mjs"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./component": "./vue/component.ts"
+  },
+  "files": [
+    "index.mjs",
+    "vue/component.ts"
+  ],
+  "peerDependencies": {
+    "vue": ">=3.0.0"
+  },
+  "devDependencies": {
+    "vue": "^3.5.0"
+  },
+  "keywords": ["icons", "svg", "css", "vue", "nuxt"],
+  "author": "itsOgden",
+  "license": "MIT"
+}
