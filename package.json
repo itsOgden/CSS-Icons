@@ -8,7 +8,10 @@
   },
   "exports": {
     ".": "./index.mjs",
-    "./component": "./vue/component.ts"
+    "./vue/component": {
+      "types": "./vue/component.ts",
+      "default": "./vue/component.ts"
+    }
   },
   "files": [
     "index.mjs",
