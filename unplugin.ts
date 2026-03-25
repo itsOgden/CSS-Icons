@@ -60,13 +60,12 @@ function svgToDataUri(svg: string) {
 }
 
 function generateVirtualModule(icons: IconRecord[]): string {
-    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
     const entries = icons.map(i => {
         const className = `${i.baseClass} ${i.implClass}${i.isBackground ? ' colored' : ''}`
         return `  '${i.icon}': '${className}'`
     }).join(',\n')
 
-    return `export type CssIconName =\n${typeNames}\n\nexport const cssIconMap = {\n${entries}\n} as const\n\nexport function getIconClass(name: CssIconName): string {\n  return cssIconMap[name]\n}\n`
+    return `export const cssIconMap = {\n${entries}\n}\n\nexport function getIconClass(name) {\n  return cssIconMap[name]\n}\n`
 }
 
 function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
