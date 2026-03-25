@@ -29,7 +29,10 @@ export default defineNuxtModule<CssIconsOptions>({
         })
         nuxt.options.css.push(cssOutPath)
 
-        // Register CssIcon as a global component
+        // Include generated type declaration
+        nuxt.hook('prepare:types', ({ references }) => {
+            references.push({ path: '.nuxt/css-icons.d.ts' })
+        })
         addComponent({
             name: 'CssIcon',
             filePath: resolver.resolve('./vue/CssIcon'),

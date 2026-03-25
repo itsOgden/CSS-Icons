@@ -59,6 +59,11 @@ function svgToDataUri(svg: string) {
     return 'data:image/svg+xml,' + encodeURIComponent(svg.replace(/\r?\n|\r/g, ' ').trim())
 }
 
+function generateTypeDeclaration(icons: IconRecord[]): string {
+    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
+    return `declare module 'virtual:css-icons/data' {\n  export type CssIconName =\n${typeNames}\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
+}
+
 function generateVirtualModule(icons: IconRecord[]): string {
     const entries = icons.map(i => {
         const className = `${i.baseClass} ${i.implClass}${i.isBackground ? ' colored' : ''}`
@@ -144,6 +149,10 @@ export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((optio
 
         async buildStart() {
             await reload()
+            // Write type declaration for virtual module
+            const dtsPath = path.join(cwd, '.nuxt', 'css-icons.d.ts')
+            fs.mkdirSync(path.dirname(dtsPath), { recursive: true })
+            fs.writeFileSync(dtsPath, generateTypeDeclaration(icons), 'utf8')
         },
 
         resolveId(id) {
