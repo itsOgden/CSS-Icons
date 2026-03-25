@@ -34,7 +34,7 @@ The wizard will:
 - Create `css-icon.config.mjs` in your project root
 - Create `plugins/css-icons.ts` (the Nuxt plugin)
 - Add the `css-icons` script to your `package.json`
-- Patch your `dev` and `build` scripts to run the generator automatically
+- Patch your `dev` and `build` scripts to run the generator automatically (auto-detects Windows vs Mac/Linux)
 - Print the one line you need to add to `nuxt.config.ts` manually
 
 ---
@@ -49,10 +49,10 @@ Create `css-icon.config.mjs` in your project root:
 
 ```js
 export default {
-  iconFolder: './assets/icons',   // where your SVGs live
-  defaultFolder: 'duotone',       // see "Icon naming" below
-  outDir: './plugins/css-icons',  // where generated files are written
-  // backgroundFolders: ['colored'],
+   iconFolder: './assets/icons',   // where your SVGs live
+   defaultFolder: 'duotone',       // see "Icon naming" below
+   outDir: './plugins/css-icons',  // where generated files are written
+   // backgroundFolders: ['colored'],
 }
 ```
 
@@ -68,26 +68,26 @@ import BaseIcon from '@itsogden/css-icons/component'
 import { getIconClass, type CssIconName } from './css-icons/icons'
 
 const CssIcon = defineComponent({
-  name: 'CssIcon',
-  props: {
-    icon: {
-      type: String as PropType<CssIconName>,
-      required: true,
-    },
-    useWidth: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(props) {
-    return () => h(BaseIcon, {
-      className: `${getIconClass(props.icon)}${props.useWidth ? ' scale-width' : ''}`,
-    })
-  },
+   name: 'CssIcon',
+   props: {
+      icon: {
+         type: String as PropType<CssIconName>,
+         required: true,
+      },
+      useWidth: {
+         type: Boolean,
+         default: false,
+      },
+   },
+   setup(props) {
+      return () => h(BaseIcon, {
+         className: `${getIconClass(props.icon)}${props.useWidth ? ' scale-width' : ''}`,
+      })
+   },
 })
 
 export default defineNuxtPlugin((nuxtApp) => {
-  nuxtApp.vueApp.component('CssIcon', CssIcon)
+   nuxtApp.vueApp.component('CssIcon', CssIcon)
 })
 ```
 
@@ -95,7 +95,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ```ts
 export default defineNuxtConfig({
-  css: ['~/plugins/css-icons/css-icon.css'],
+   css: ['~/plugins/css-icons/css-icon.css'],
 })
 ```
 
@@ -103,9 +103,9 @@ export default defineNuxtConfig({
 
 ```json
 "scripts": {
-  "css-icons": "node ./node_modules/@itsogden/css-icons/index.mjs",
-  "dev": "pnpm css-icons --watch & nuxt dev",
-  "build": "pnpm css-icons && nuxt build"
+"css-icons": "node ./node_modules/@itsogden/css-icons/index.mjs",
+"dev": "pnpm css-icons --watch & nuxt dev",
+"build": "pnpm css-icons && nuxt build"
 }
 ```
 

@@ -120,13 +120,14 @@ async function init() {
 
         if (pkg.scripts['dev']?.includes('css-icons')) {
             console.log(`${checkMark()} package.json "dev" script already includes css-icons, skipping.`)
-        } else if (pkg.scripts['dev']) {
+        } else if (!pkg.scripts['dev']) {
+            console.log(`${warn()} No "dev" script found in package.json, skipping.`)
+        } else {
             const ans = await prompt(rl, `${info()} Patch "dev" script to run css-icons in watch mode alongside nuxt? (Y/n): `)
             if (ans.trim().toLowerCase() !== 'n') {
-                const isWindows = await prompt(rl, `${info()} Are you on Windows? (y/N): `)
-                if (isWindows.trim().toLowerCase() === 'y') {
+                if (process.platform === 'win32') {
                     pkg.scripts['dev'] = `concurrently "pnpm css-icons --watch" "${pkg.scripts['dev']}"`
-                    console.log(`${warn()} Added concurrently to dev script. Run: pnpm add -D concurrently`)
+                    console.log(`${warn()} Windows detected — added concurrently. Run: pnpm add -D concurrently`)
                 } else {
                     pkg.scripts['dev'] = `pnpm css-icons --watch & ${pkg.scripts['dev']}`
                 }
@@ -137,7 +138,9 @@ async function init() {
 
         if (pkg.scripts['build']?.includes('css-icons')) {
             console.log(`${checkMark()} package.json "build" script already includes css-icons, skipping.`)
-        } else if (pkg.scripts['build']) {
+        } else if (!pkg.scripts['build']) {
+            console.log(`${warn()} No "build" script found in package.json, skipping.`)
+        } else {
             const ans = await prompt(rl, `${info()} Patch "build" script to generate icons before nuxt build? (Y/n): `)
             if (ans.trim().toLowerCase() !== 'n') {
                 pkg.scripts['build'] = `pnpm css-icons && ${pkg.scripts['build']}`
