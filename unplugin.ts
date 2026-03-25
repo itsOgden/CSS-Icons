@@ -77,8 +77,7 @@ export function generateComponentWrapper(icons: IconRecord[]): string {
         const className = `${i.baseClass} ${i.implClass}${i.isBackground ? ' colored' : ''}`
         return `  '${i.icon}': '${className}'`
     }).join(',\n')
-    return `import { defineComponent, h, type PropType } from 'vue'
-
+    return `<script setup lang="ts">
 export type CssIconName =
 ${typeNames}
 
@@ -86,24 +85,15 @@ const cssIconMap: Record<CssIconName, string> = {
 ${entries}
 }
 
-export default defineComponent({
-  name: 'CssIcon',
-  props: {
-    icon: {
-      type: String as PropType<CssIconName>,
-      required: true as const,
-    },
-    useWidth: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  setup(props) {
-    return () => h('i', {
-      class: ['icon', cssIconMap[props.icon as CssIconName], props.useWidth ? 'scale-width' : ''].filter(Boolean).join(' '),
-    })
-  },
-})
+const props = defineProps<{
+  icon: CssIconName
+  useWidth?: boolean
+}>()
+</script>
+
+<template>
+  <i :class="['icon', cssIconMap[icon], useWidth ? 'scale-width' : ''].filter(Boolean).join(' ')" />
+</template>
 `
 }
 

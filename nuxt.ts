@@ -37,7 +37,7 @@ export default defineNuxtModule<CssIconsOptions>({
         })
 
         // Write generated component wrapper with exact icon types baked in
-        const componentPath = path.join(cwd, '.nuxt', 'css-icons-component.ts')
+        const componentPath = path.join(cwd, '.nuxt', 'css-icons-component.vue')
         fs.mkdirSync(path.dirname(componentPath), { recursive: true })
         fs.writeFileSync(componentPath, generateComponentWrapper(icons), 'utf8')
 
