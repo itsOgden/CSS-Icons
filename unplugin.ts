@@ -92,18 +92,46 @@ const props = defineProps<{
 </script>
 
 <template>
-  <i :class="['icon', cssIconMap[icon], useWidth ? 'scale-width' : ''].filter(Boolean).join(' ')" />
+  <i :class="['icon', cssIconMap[icon], useWidth ? 'scale-width' : '']" style="height: 1em;" />
 </template>
 `
 }
 
-export function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
+function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
     const iconFolder = path.resolve(cwd, config.iconFolder)
     let css = ''
-    css += `.icon { display: inline-block; vertical-align: middle; line-height: 1; }\n`
-    css += `.icon::after { content: ""; display: inline-block; height: 1em; width: 1em; background-color: currentColor; mask-size: contain; mask-repeat: no-repeat; mask-position: center; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center; }\n`
-    css += `.icon.scale-width::after { width: var(--icon-width, 1em); }\n`
-    css += `.icon.colored::after { background-color: transparent; background-size: contain; background-repeat: no-repeat; background-position: center; }\n\n`
+    css += `.icon {\n`
+    css += `  display: inline-flex;\n`
+    css += `  justify-content: center;\n`
+    css += `  align-items: center;\n`
+    css += `  vertical-align: middle;\n`
+    css += `}\n`
+    css += `.icon::after {\n`
+    css += `  content: '';\n`
+    css += `  display: block;\n`
+    css += `  height: 100%;\n`
+    css += `  flex-grow: 1;\n`
+    css += `  mask-size: contain;\n`
+    css += `  mask-repeat: no-repeat;\n`
+    css += `  mask-position: center;\n`
+    css += `  -webkit-mask-size: contain;\n`
+    css += `  -webkit-mask-repeat: no-repeat;\n`
+    css += `  -webkit-mask-position: center;\n`
+    css += `  background-color: currentColor;\n`
+    css += `}\n`
+    css += `.icon.colored::after {\n`
+    css += `  background-color: transparent;\n`
+    css += `  background-size: contain;\n`
+    css += `  background-position: center;\n`
+    css += `  background-repeat: no-repeat;\n`
+    css += `}\n`
+    css += `.icon.scale-width {\n`
+    css += `  height: 100%;\n`
+    css += `}\n`
+    css += `.icon.scale-width::after {\n`
+    css += `  width: 100%;\n`
+    css += `  height: 100%;\n`
+    css += `}\n\n`
     css += `:root {\n`
     for (const icon of icons) {
         const svgPath = path.join(iconFolder, icon.relPath)
@@ -113,7 +141,6 @@ export function generateCss(icons: IconRecord[], config: IconConfig, cwd: string
     css += `}\n\n`
     for (const icon of icons) {
         css += `.${icon.implClass}::after {\n`
-        css += `  --icon-width: 1em;\n`
         if (icon.isBackground) {
             css += `  background-image: var(--${icon.implClass});\n`
         } else {
