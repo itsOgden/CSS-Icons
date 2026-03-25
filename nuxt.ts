@@ -1,5 +1,5 @@
 import { defineNuxtModule, addComponent, createResolver, addTypeTemplate } from '@nuxt/kit'
-import { CssIconsPlugin, generateTypeDeclaration, generateComponentDeclaration, buildIconsFromConfig, generateCssFromConfig } from './unplugin'
+import { CssIconsPlugin, generateTypeDeclaration, generateComponentWrapper, buildIconsFromConfig, generateCssFromConfig } from './unplugin'
 import fs from 'fs'
 import path from 'path'
 import type { CssIconsOptions } from './unplugin'
@@ -10,7 +10,6 @@ export default defineNuxtModule<CssIconsOptions>({
         configKey: 'cssIcons',
     },
     async setup(options, nuxt) {
-        const resolver = createResolver(import.meta.url)
         const cwd = nuxt.options.rootDir
 
         // Register the Vite plugin for virtual data module + HMR
@@ -19,37 +18,33 @@ export default defineNuxtModule<CssIconsOptions>({
             config.plugins.push(CssIconsPlugin.vite(options))
         })
 
-        // Write CSS to a temp file in .nuxt/ and include it properly
+        // Write CSS to .nuxt/ and include it
         const cssOutPath = path.join(cwd, '.nuxt', 'css-icons.css')
         nuxt.hook('build:before', async () => {
-            const { generateCssFromConfig } = await import('./unplugin')
             const css = await generateCssFromConfig(cwd, options.configPath)
             fs.mkdirSync(path.dirname(cssOutPath), { recursive: true })
             fs.writeFileSync(cssOutPath, css, 'utf8')
         })
         nuxt.options.css.push(cssOutPath)
 
-        // Generate type declaration via addTypeTemplate so IDEs pick it up properly
+        // Build icons for type generation
         const icons = await buildIconsFromConfig(cwd, options.configPath)
 
+        // Generate virtual module type declaration
         addTypeTemplate({
             filename: 'types/css-icons.d.ts',
             getContents: () => generateTypeDeclaration(icons),
         })
 
-        addTypeTemplate({
-            filename: 'types/css-icons-component.d.ts',
-            getContents: () => generateComponentDeclaration(icons),
-        })
+        // Write generated component wrapper with exact icon types baked in
+        const componentPath = path.join(cwd, '.nuxt', 'css-icons-component.ts')
+        fs.mkdirSync(path.dirname(componentPath), { recursive: true })
+        fs.writeFileSync(componentPath, generateComponentWrapper(icons), 'utf8')
 
-        // Include generated type declaration
-        nuxt.hook('prepare:types', ({ tsConfig }) => {
-            tsConfig.include = tsConfig.include || []
-            tsConfig.include.push('../css-icons.d.ts')
-        })
+        // Register CssIcon pointing at the generated wrapper
         addComponent({
             name: 'CssIcon',
-            filePath: resolver.resolve('./vue/CssIcon'),
+            filePath: componentPath,
         })
     },
 })

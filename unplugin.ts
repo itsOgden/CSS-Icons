@@ -6,7 +6,6 @@ const VIRTUAL_ID = 'virtual:css-icons/data'
 const RESOLVED_ID = '\0virtual:css-icons/data'
 
 export interface CssIconsOptions {
-    // Path to css-icons.config.mjs, defaults to process.cwd()
     configPath?: string
 }
 
@@ -59,26 +58,49 @@ function svgToDataUri(svg: string) {
     return 'data:image/svg+xml,' + encodeURIComponent(svg.replace(/\r?\n|\r/g, ' ').trim())
 }
 
-export function generateTypeDeclaration(icons: IconRecord[]): string {
-    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
-    return `import type { CssIconName } from './css-icons-types.d.ts'\n\ndeclare module 'virtual:css-icons/data' {\n  export type { CssIconName }\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
-}
-
-export function generateComponentDeclaration(icons: IconRecord[]): string {
-    const typeNames = icons.map(i => `    | '${i.icon}'`).join('\n') || `    | 'error'`
-    return `import type { DefineComponent } from 'vue'\n\ntype CssIconName =\n${typeNames}\n\ndeclare module 'vue' {\n  export interface GlobalComponents {\n    CssIcon: DefineComponent<{ icon: CssIconName; useWidth?: boolean }>\n  }\n}\n\nexport {}\n`
-}
-
 function generateVirtualModule(icons: IconRecord[]): string {
     const entries = icons.map(i => {
         const className = `${i.baseClass} ${i.implClass}${i.isBackground ? ' colored' : ''}`
         return `  '${i.icon}': '${className}'`
     }).join(',\n')
-
     return `export const cssIconMap = {\n${entries}\n}\n\nexport function getIconClass(name) {\n  return cssIconMap[name]\n}\n`
 }
 
-function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
+export function generateTypeDeclaration(icons: IconRecord[]): string {
+    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
+    return `declare module 'virtual:css-icons/data' {\n  export type CssIconName =\n${typeNames}\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
+}
+
+export function generateComponentWrapper(icons: IconRecord[]): string {
+    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
+    return `import { defineComponent, h } from 'vue'
+import { getIconClass } from 'virtual:css-icons/data'
+
+export type CssIconName =
+${typeNames}
+
+export default defineComponent({
+  name: 'CssIcon',
+  props: {
+    icon: {
+      type: String as () => CssIconName,
+      required: true as const,
+    },
+    useWidth: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
+    return () => h('i', {
+      class: ['icon', getIconClass(props.icon as CssIconName), props.useWidth ? 'scale-width' : ''].filter(Boolean).join(' '),
+    })
+  },
+})
+`
+}
+
+export function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
     const iconFolder = path.resolve(cwd, config.iconFolder)
     let css = ''
     css += `.icon { display: inline-block; vertical-align: middle; line-height: 1; }\n`
@@ -110,7 +132,6 @@ async function loadConfig(cwd: string, configPath?: string): Promise<IconConfig>
     const candidates = configPath
         ? [configPath]
         : [path.join(cwd, 'css-icons.config.mjs'), path.join(cwd, 'css-icons.config.js')]
-
     for (const file of candidates) {
         if (fs.existsSync(file)) {
             let resolved = path.resolve(file).replace(/\\/g, '/')
@@ -122,7 +143,7 @@ async function loadConfig(cwd: string, configPath?: string): Promise<IconConfig>
     throw new Error('Could not find css-icons.config.mjs — run `pnpm css-icons init` first')
 }
 
-function buildIcons(config: IconConfig, cwd: string): IconRecord[] {
+export function buildIcons(config: IconConfig, cwd: string): IconRecord[] {
     const iconDir = path.resolve(cwd, config.iconFolder)
     if (!fs.existsSync(iconDir)) throw new Error(`iconFolder does not exist: ${iconDir}`)
     const files = walkSvgFiles(iconDir)
@@ -145,13 +166,11 @@ export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((optio
     let config: IconConfig
     let icons: IconRecord[]
     let virtualModule: string
-    let cssContent: string
 
     async function reload() {
         config = await loadConfig(cwd, options.configPath)
         icons = buildIcons(config, cwd)
         virtualModule = generateVirtualModule(icons)
-        cssContent = generateCss(icons, config, cwd)
     }
 
     return {
@@ -171,10 +190,8 @@ export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((optio
 
         vite: {
             configureServer(server) {
-                // Watch SVG folder and invalidate virtual module on change
                 const watchDir = config?.iconFolder ? path.resolve(cwd, config.iconFolder) : null
                 if (!watchDir) return
-
                 server.watcher.add(watchDir)
                 server.watcher.on('all', async (event, file) => {
                     if (!file.toLowerCase().endsWith('.svg')) return
