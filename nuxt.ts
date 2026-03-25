@@ -30,8 +30,9 @@ export default defineNuxtModule<CssIconsOptions>({
         nuxt.options.css.push(cssOutPath)
 
         // Include generated type declaration
-        nuxt.hook('prepare:types', ({ references }) => {
-            references.push({ path: '.nuxt/css-icons.d.ts' })
+        nuxt.hook('prepare:types', ({ tsConfig }) => {
+            tsConfig.include = tsConfig.include || []
+            tsConfig.include.push('./.nuxt/css-icons.d.ts')
         })
         addComponent({
             name: 'CssIcon',
