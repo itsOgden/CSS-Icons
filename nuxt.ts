@@ -38,7 +38,7 @@ export default defineNuxtModule<CssIconsOptions>({
         })
 
         addTypeTemplate({
-            filename: 'types/css-icons-types.ts',
+            filename: 'types/css-icons-types.d.ts',
             getContents: () => generateTypesFile(icons),
         })
 
