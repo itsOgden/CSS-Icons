@@ -59,7 +59,7 @@ function svgToDataUri(svg: string) {
     return 'data:image/svg+xml,' + encodeURIComponent(svg.replace(/\r?\n|\r/g, ' ').trim())
 }
 
-function generateTypeDeclaration(icons: IconRecord[]): string {
+export function generateTypeDeclaration(icons: IconRecord[]): string {
     const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
     return `declare module 'virtual:css-icons/data' {\n  export type CssIconName =\n${typeNames}\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
 }
@@ -124,6 +124,11 @@ function buildIcons(config: IconConfig, cwd: string): IconRecord[] {
     return files.map(f => buildIconRecord(f, config)).sort((a, b) => a.icon.localeCompare(b.icon))
 }
 
+export async function buildIconsFromConfig(cwd: string, configPath?: string): Promise<IconRecord[]> {
+    const config = await loadConfig(cwd, configPath)
+    return buildIcons(config, cwd)
+}
+
 export async function generateCssFromConfig(cwd: string, configPath?: string): Promise<string> {
     const config = await loadConfig(cwd, configPath)
     const icons = buildIcons(config, cwd)
@@ -149,10 +154,6 @@ export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((optio
 
         async buildStart() {
             await reload()
-            // Write type declaration for virtual module
-            const dtsPath = path.join(cwd, '.nuxt', 'css-icons.d.ts')
-            fs.mkdirSync(path.dirname(dtsPath), { recursive: true })
-            fs.writeFileSync(dtsPath, generateTypeDeclaration(icons), 'utf8')
         },
 
         resolveId(id) {

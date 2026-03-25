@@ -1,5 +1,5 @@
-import { defineNuxtModule, addComponent, createResolver } from '@nuxt/kit'
-import { CssIconsPlugin } from './unplugin'
+import { defineNuxtModule, addComponent, createResolver, addTypeTemplate } from '@nuxt/kit'
+import { CssIconsPlugin, generateTypeDeclaration, buildIconsFromConfig } from './unplugin'
 import fs from 'fs'
 import path from 'path'
 import type { CssIconsOptions } from './unplugin'
@@ -29,10 +29,18 @@ export default defineNuxtModule<CssIconsOptions>({
         })
         nuxt.options.css.push(cssOutPath)
 
+        // Generate type declaration via addTypeTemplate so IDEs pick it up properly
+        const icons = await buildIconsFromConfig(cwd, options.configPath)
+
+        addTypeTemplate({
+            filename: 'types/css-icons.d.ts',
+            getContents: () => generateTypeDeclaration(icons),
+        })
+
         // Include generated type declaration
         nuxt.hook('prepare:types', ({ tsConfig }) => {
             tsConfig.include = tsConfig.include || []
-            tsConfig.include.push('./.nuxt/css-icons.d.ts')
+            tsConfig.include.push('../css-icons.d.ts')
         })
         addComponent({
             name: 'CssIcon',
