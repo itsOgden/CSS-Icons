@@ -147,7 +147,11 @@ async function init() {
             if (ans.trim().toLowerCase() !== 'n') {
                 if (process.platform === 'win32') {
                     pkg.scripts['dev'] = `concurrently "pnpm css-icons --watch" "${pkg.scripts['dev']}"`
-                    console.log(`${warn()} Windows detected — added concurrently. Run: pnpm add -D concurrently`)
+                    changed = true
+                    console.log(`${checkMark()} Patched "dev" script (Windows — using concurrently)`)
+                    console.log(`${info()} Installing concurrently...`)
+                    const { execSync } = await import('child_process')
+                    execSync('pnpm add -D concurrently', { stdio: 'inherit', cwd })
                 } else {
                     pkg.scripts['dev'] = `pnpm css-icons --watch & ${pkg.scripts['dev']}`
                 }
@@ -243,10 +247,8 @@ function buildIconRecord(relPath, config) {
     const noExt = clean.replace(/\.svg$/i, '')
     const parts = noExt.split('/').filter(Boolean)
     const fileName = parts.pop()
-    const folderParts = parts
-    const folder = folderParts[folderParts.length - 1] || ''
-    const prefix = folderParts.join('-')
-    const stem = prefix ? `${prefix}-${fileName}` : fileName
+    const folder = parts[parts.length - 1] || ''
+    const stem = fileName
     const isDefault = !!config.defaultFolder && folder === config.defaultFolder
     const icon = isDefault ? stem : (folder ? `${stem}-${folder}` : stem)
     const isBackground = (config.backgroundFolders || []).includes(folder)

@@ -31,10 +31,11 @@ pnpm css-icons init
 ```
 
 The wizard will:
-- Create `css-icon.config.mjs` in your project root
+- Create `css-icons.config.mjs` in your project root (prompts you for folder paths)
 - Create `plugins/css-icons.ts` (the Nuxt plugin)
 - Add the `css-icons` script to your `package.json`
 - Patch your `dev` and `build` scripts to run the generator automatically (auto-detects Windows vs Mac/Linux)
+- Run the initial icon build
 - Print the one line you need to add to `nuxt.config.ts` manually
 
 ---
@@ -45,7 +46,7 @@ If you'd rather not use the wizard, here's what it does under the hood.
 
 ### 1. Config file
 
-Create `css-icon.config.mjs` in your project root:
+Create `css-icons.config.mjs` in your project root:
 
 ```js
 export default {
@@ -68,26 +69,26 @@ import BaseIcon from '@itsogden/css-icons/component'
 import { getIconClass, type CssIconName } from './css-icons/icons'
 
 const CssIcon = defineComponent({
-   name: 'CssIcon',
-   props: {
-      icon: {
-         type: String as PropType<CssIconName>,
-         required: true,
-      },
-      useWidth: {
-         type: Boolean,
-         default: false,
-      },
-   },
-   setup(props) {
-      return () => h(BaseIcon, {
-         className: `${getIconClass(props.icon)}${props.useWidth ? ' scale-width' : ''}`,
-      })
-   },
+  name: 'CssIcon',
+  props: {
+    icon: {
+      type: String as PropType<CssIconName>,
+      required: true,
+    },
+    useWidth: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  setup(props) {
+    return () => h(BaseIcon, {
+      className: `${getIconClass(props.icon)}${props.useWidth ? ' scale-width' : ''}`,
+    })
+  },
 })
 
 export default defineNuxtPlugin((nuxtApp) => {
-   nuxtApp.vueApp.component('CssIcon', CssIcon)
+  nuxtApp.vueApp.component('CssIcon', CssIcon)
 })
 ```
 
@@ -95,7 +96,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 ```ts
 export default defineNuxtConfig({
-   css: ['~/plugins/css-icons/css-icon.css'],
+  css: ['~/plugins/css-icons/css-icon.css'],
 })
 ```
 
@@ -103,22 +104,13 @@ export default defineNuxtConfig({
 
 ```json
 "scripts": {
-"css-icons": "node ./node_modules/@itsogden/css-icons/index.mjs",
-"dev": "pnpm css-icons --watch & nuxt dev",
-"build": "pnpm css-icons && nuxt build"
+  "css-icons": "node ./node_modules/@itsogden/css-icons/index.mjs",
+  "dev": "pnpm css-icons --watch & nuxt dev",
+  "build": "pnpm css-icons && nuxt build"
 }
 ```
 
-> **Windows users:** The `&` operator doesn't work in cmd or PowerShell. Install `concurrently` and use this instead:
-> ```bash
-> pnpm add -D concurrently
-> ```
-> ```json
-> "dev": "concurrently \"pnpm css-icons --watch\" \"nuxt dev\""
-> ```
-> The `build` script is fine as-is on Windows since `&&` (sequential) works in both environments.
->
-> The setup wizard will ask about your OS and handle this automatically.
+> **Windows users:** The setup wizard auto-detects Windows and installs `concurrently` as a devDependency to handle parallel script execution. No manual steps needed.
 
 ---
 
@@ -168,17 +160,17 @@ Icon names are derived from their file path relative to `iconFolder`.
 
 | File path | Icon name |
 |---|---|
-| `duotone/gear.svg` | `duotone-gear` |
-| `duotone/arrow-right.svg` | `duotone-arrow-right` |
-| `colored/logo.svg` | `colored-logo` |
+| `duotone/gear.svg` | `gear-duotone` |
+| `duotone/arrow-right.svg` | `arrow-right-duotone` |
+| `colored/logo.svg` | `logo-colored` |
 
 ### `defaultFolder`
 
-If you set `defaultFolder: 'duotone'`, icons inside that folder drop the folder suffix from the icon name:
+If you set `defaultFolder: 'duotone'`, icons inside that folder drop the folder suffix:
 
 | File path | Without defaultFolder | With defaultFolder: 'duotone' |
 |---|---|---|
-| `duotone/gear.svg` | `duotone-gear-duotone` | `duotone-gear` |
+| `duotone/gear.svg` | `gear-duotone` | `gear` |
 
 ### Full-color icons
 
