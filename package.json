@@ -1,29 +1,49 @@
 {
   "name": "@itsogden/css-icons",
   "version": "1.0.0",
-  "description": "SVG-to-CSS icon generator with Vue 3 / Nuxt 3 component",
+  "description": "SVG-to-CSS icon generator with Vue 3 / Nuxt 3+4 component",
   "type": "module",
   "bin": {
     "css-icons": "./index.mjs"
   },
   "exports": {
     ".": "./index.mjs",
-    "./vue/component": {
-      "types": "./vue/component.ts",
-      "default": "./vue/component.ts"
-    }
+    "./nuxt": "./nuxt.ts",
+    "./vite": "./vite.ts",
+    "./unplugin": "./unplugin.ts",
+    "./component": "./vue/CssIcon.ts",
+    "./types": "./virtual.d.ts"
   },
   "files": [
     "index.mjs",
-    "vue/component.ts"
+    "nuxt.ts",
+    "vite.ts",
+    "unplugin.ts",
+    "vue/CssIcon.ts",
+    "virtual.d.ts"
   ],
   "peerDependencies": {
     "vue": ">=3.0.0"
   },
   "devDependencies": {
-    "vue": "^3.5.0"
+    "@types/node": "^22.0.0",
+    "vue": "^3.5.0",
+    "@nuxt/kit": "^3.0.0",
+    "unplugin": "^2.0.0"
   },
-  "keywords": ["icons", "svg", "css", "vue", "nuxt"],
+  "dependencies": {
+    "unplugin": "^2.0.0"
+  },
+  "keywords": [
+    "icons",
+    "svg",
+    "css",
+    "vue",
+    "nuxt",
+    "vite",
+    "unplugin"
+  ],
   "author": "itsOgden",
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a"
 }

@@ -4,7 +4,8 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "strict": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node"]
   },
-  "include": ["vue/**/*.ts"]
+  "include": ["vue/**/*.ts", "unplugin.ts", "nuxt.ts", "vite.ts", "virtual.d.ts"]
 }
