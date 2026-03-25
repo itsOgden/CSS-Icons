@@ -120,6 +120,12 @@ function buildIcons(config: IconConfig, cwd: string): IconRecord[] {
     return files.map(f => buildIconRecord(f, config)).sort((a, b) => a.icon.localeCompare(b.icon))
 }
 
+export async function generateCssFromConfig(cwd: string, configPath?: string): Promise<string> {
+    const config = await loadConfig(cwd, configPath)
+    const icons = buildIcons(config, cwd)
+    return generateCss(icons, config, cwd)
+}
+
 export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((options = {}) => {
     const cwd = process.cwd()
     let config: IconConfig
@@ -143,12 +149,10 @@ export const CssIconsPlugin = createUnplugin<CssIconsOptions | undefined>((optio
 
         resolveId(id) {
             if (id === VIRTUAL_ID) return RESOLVED_ID
-            if (id === 'virtual:css-icons/styles') return '\0virtual:css-icons/styles'
         },
 
         load(id) {
-            if (id === RESOLVED_ID) return virtualModule
-            if (id === '\0virtual:css-icons/styles') return cssContent
+            if (id === RESOLVED_ID) return { code: virtualModule, map: null }
         },
 
         vite: {

@@ -1,5 +1,7 @@
-import { defineNuxtModule, addPlugin, addComponent, createResolver } from '@nuxt/kit'
+import { defineNuxtModule, addComponent, createResolver } from '@nuxt/kit'
 import { CssIconsPlugin } from './unplugin'
+import fs from 'fs'
+import path from 'path'
 import type { CssIconsOptions } from './unplugin'
 
 export default defineNuxtModule<CssIconsOptions>({
@@ -7,17 +9,25 @@ export default defineNuxtModule<CssIconsOptions>({
         name: '@itsogden/css-icons',
         configKey: 'cssIcons',
     },
-    setup(options, nuxt) {
+    async setup(options, nuxt) {
         const resolver = createResolver(import.meta.url)
+        const cwd = nuxt.options.rootDir
 
-        // Register the Vite plugin
+        // Register the Vite plugin for virtual data module + HMR
         nuxt.hook('vite:extendConfig', (config) => {
             config.plugins = config.plugins || []
             config.plugins.push(CssIconsPlugin.vite(options))
         })
 
-        // Inject the CSS virtual module
-        nuxt.options.css.push('virtual:css-icons/styles')
+        // Write CSS to a temp file in .nuxt/ and include it properly
+        const cssOutPath = path.join(cwd, '.nuxt', 'css-icons.css')
+        nuxt.hook('build:before', async () => {
+            const { generateCssFromConfig } = await import('./unplugin')
+            const css = await generateCssFromConfig(cwd, options.configPath)
+            fs.mkdirSync(path.dirname(cssOutPath), { recursive: true })
+            fs.writeFileSync(cssOutPath, css, 'utf8')
+        })
+        nuxt.options.css.push(cssOutPath)
 
         // Register CssIcon as a global component
         addComponent({
