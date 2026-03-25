@@ -64,9 +64,9 @@ export function generateTypeDeclaration(icons: IconRecord[]): string {
     return `import type { CssIconName } from './css-icons-types.d.ts'\n\ndeclare module 'virtual:css-icons/data' {\n  export type { CssIconName }\n  export const cssIconMap: Record<CssIconName, string>\n  export function getIconClass(name: CssIconName): string\n}\n`
 }
 
-export function generateTypesFile(icons: IconRecord[]): string {
-    const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
-    return `export type CssIconName =\n${typeNames}\n`
+export function generateComponentDeclaration(icons: IconRecord[]): string {
+    const typeNames = icons.map(i => `    | '${i.icon}'`).join('\n') || `    | 'error'`
+    return `import type { DefineComponent } from 'vue'\n\ntype CssIconName =\n${typeNames}\n\ndeclare module 'vue' {\n  export interface GlobalComponents {\n    CssIcon: DefineComponent<{ icon: CssIconName; useWidth?: boolean }>\n  }\n}\n\nexport {}\n`
 }
 
 function generateVirtualModule(icons: IconRecord[]): string {
