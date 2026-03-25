@@ -73,11 +73,18 @@ export function generateTypeDeclaration(icons: IconRecord[]): string {
 
 export function generateComponentWrapper(icons: IconRecord[]): string {
     const typeNames = icons.map(i => `  | '${i.icon}'`).join('\n') || `  | 'error'`
+    const entries = icons.map(i => {
+        const className = `${i.baseClass} ${i.implClass}${i.isBackground ? ' colored' : ''}`
+        return `  '${i.icon}': '${className}'`
+    }).join(',\n')
     return `import { defineComponent, h } from 'vue'
-import { getIconClass } from 'virtual:css-icons/data'
 
 export type CssIconName =
 ${typeNames}
+
+const cssIconMap: Record<CssIconName, string> = {
+${entries}
+}
 
 export default defineComponent({
   name: 'CssIcon',
@@ -93,7 +100,7 @@ export default defineComponent({
   },
   setup(props) {
     return () => h('i', {
-      class: ['icon', getIconClass(props.icon as CssIconName), props.useWidth ? 'scale-width' : ''].filter(Boolean).join(' '),
+      class: ['icon', cssIconMap[props.icon as CssIconName], props.useWidth ? 'scale-width' : ''].filter(Boolean).join(' '),
     })
   },
 })
