@@ -54,8 +54,22 @@ function buildIconRecord(relPath: string, config: IconConfig): IconRecord {
     return { relPath: clean, folder, stem, icon, baseClass, implClass, isBackground }
 }
 
-function svgToDataUri(svg: string) {
-    return 'data:image/svg+xml,' + encodeURIComponent(svg.replace(/\r?\n|\r/g, ' ').trim())
+function encodeSvg(svg: string): string {
+    return svg
+        .replace(/<!--.*?-->/gs, '')
+        .replace('<svg', ~svg.indexOf('xmlns') ? '<svg' : '<svg xmlns="http://www.w3.org/2000/svg"')
+        .replace(/"/g, "'")
+        .replace(/%/g, '%25')
+        .replace(/#/g, '%23')
+        .replace(/{/g, '%7B')
+        .replace(/}/g, '%7D')
+        .replace(/</g, '%3C')
+        .replace(/>/g, '%3E')
+        .replace(/(\r\n|\n|\r)/g, '')
+}
+
+function svgToDataUri(svg: string): string {
+    return `data:image/svg+xml;utf8,${encodeSvg(svg)}`
 }
 
 function generateVirtualModule(icons: IconRecord[]): string {
@@ -92,9 +106,18 @@ const props = defineProps<{
 </script>
 
 <template>
-  <i :class="['icon', cssIconMap[icon], useWidth ? 'scale-width' : '']" style="height: 1em;" />
+  <i :class="['icon', cssIconMap[icon], useWidth ? 'scale-width' : '']" />
 </template>
 `
+}
+
+function getAspectRatio(svg: string): number {
+    const match = svg.match(/viewBox="(\d+\s\d+\s\d+\s\d+)"/)
+    if (!match) return 1
+    const parts = match[1].split(' ')
+    const w = parseFloat(parts[2])
+    const h = parseFloat(parts[3])
+    return h ? w / h : 1
 }
 
 function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): string {
@@ -105,25 +128,17 @@ function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): stri
     css += `  justify-content: center;\n`
     css += `  align-items: center;\n`
     css += `  vertical-align: middle;\n`
+    css += `  height: 1em;\n`
     css += `}\n`
     css += `.icon::after {\n`
     css += `  content: '';\n`
     css += `  display: block;\n`
     css += `  height: 100%;\n`
     css += `  flex-grow: 1;\n`
-    css += `  mask-size: contain;\n`
-    css += `  mask-repeat: no-repeat;\n`
-    css += `  mask-position: center;\n`
-    css += `  -webkit-mask-size: contain;\n`
-    css += `  -webkit-mask-repeat: no-repeat;\n`
-    css += `  -webkit-mask-position: center;\n`
     css += `  background-color: currentColor;\n`
     css += `}\n`
     css += `.icon.colored::after {\n`
     css += `  background-color: transparent;\n`
-    css += `  background-size: contain;\n`
-    css += `  background-position: center;\n`
-    css += `  background-repeat: no-repeat;\n`
     css += `}\n`
     css += `.icon.scale-width {\n`
     css += `  height: 100%;\n`
@@ -140,12 +155,16 @@ function generateCss(icons: IconRecord[], config: IconConfig, cwd: string): stri
     }
     css += `}\n\n`
     for (const icon of icons) {
+        const svgPath = path.join(iconFolder, icon.relPath)
+        const svg = fs.readFileSync(svgPath, 'utf8')
+        const width = `${getAspectRatio(svg)}em`
         css += `.${icon.implClass}::after {\n`
+        css += `  width: ${width};\n`
         if (icon.isBackground) {
-            css += `  background-image: var(--${icon.implClass});\n`
+            css += `  background: var(--${icon.implClass}) no-repeat;\n`
         } else {
-            css += `  mask-image: var(--${icon.implClass});\n`
-            css += `  -webkit-mask-image: var(--${icon.implClass});\n`
+            css += `  mask: var(--${icon.implClass}) no-repeat;\n`
+            css += `  -webkit-mask: var(--${icon.implClass}) no-repeat;\n`
         }
         css += `}\n\n`
     }
