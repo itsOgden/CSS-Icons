@@ -5,7 +5,8 @@
     "moduleResolution": "Bundler",
     "strict": false,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node"],
+    "ignoreDeprecations": "6.0"
   },
   "include": ["vue/**/*.ts", "unplugin.ts", "nuxt.ts", "vite.ts", "virtual.d.ts"]
 }

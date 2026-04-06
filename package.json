@@ -7,29 +7,41 @@
     "css-icons": "./index.mjs"
   },
   "exports": {
-    ".": "./index.mjs",
-    "./nuxt": "./nuxt.ts",
-    "./vite": "./vite.ts",
-    "./unplugin": "./unplugin.ts",
-    "./component": "./vue/CssIcon.ts",
+    "./nuxt": {
+      "types": "./dist/nuxt.d.ts",
+      "import": "./dist/nuxt.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./unplugin": {
+      "types": "./dist/unplugin.d.ts",
+      "import": "./dist/unplugin.js"
+    },
+    "./component": {
+      "types": "./dist/component.d.ts",
+      "import": "./dist/component.js"
+    },
     "./types": "./virtual.d.ts"
   },
   "files": [
     "index.mjs",
-    "nuxt.ts",
-    "vite.ts",
-    "unplugin.ts",
-    "vue/CssIcon.ts",
+    "dist",
     "virtual.d.ts"
   ],
+  "scripts": {
+    "build": "tsup"
+  },
   "peerDependencies": {
     "vue": ">=3.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "vue": "^3.5.0",
     "@nuxt/kit": "^3.0.0",
-    "unplugin": "^2.0.0"
+    "@types/node": "^22.0.0",
+    "tsup": "^8.5.1",
+    "unplugin": "^2.0.0",
+    "vue": "^3.5.0"
   },
   "dependencies": {
     "unplugin": "^2.0.0"
