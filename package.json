@@ -1,60 +1,33 @@
 {
   "name": "@itsogden/css-icons",
   "version": "1.0.0",
-  "description": "SVG-to-CSS icon generator with Vue 3 / Nuxt 3+4 component",
+  "description": "SVG-to-CSS icon generator with Vue 3 / Nuxt 3+ component",
   "type": "module",
   "bin": {
     "css-icons": "./index.mjs"
   },
   "exports": {
     "./nuxt": {
-      "types": "./dist/nuxt.d.ts",
-      "import": "./dist/nuxt.js"
+      "types": "./nuxt.d.ts",
+      "import": "./nuxt.mjs"
     },
     "./vite": {
-      "types": "./dist/vite.d.ts",
-      "import": "./dist/vite.js"
-    },
-    "./unplugin": {
-      "types": "./dist/unplugin.d.ts",
-      "import": "./dist/unplugin.js"
-    },
-    "./component": {
-      "types": "./dist/component.d.ts",
-      "import": "./dist/component.js"
-    },
-    "./types": "./virtual.d.ts"
+      "types": "./vite.d.ts",
+      "import": "./vite.mjs"
+    }
   },
   "files": [
     "index.mjs",
-    "dist",
-    "virtual.d.ts"
+    "generate.mjs",
+    "nuxt.mjs",
+    "nuxt.d.ts",
+    "vite.mjs",
+    "vite.d.ts"
   ],
-  "scripts": {
-    "build": "tsup"
-  },
   "peerDependencies": {
     "vue": ">=3.0.0"
   },
-  "devDependencies": {
-    "@nuxt/kit": "^3.0.0",
-    "@types/node": "^22.0.0",
-    "tsup": "^8.5.1",
-    "unplugin": "^2.0.0",
-    "vue": "^3.5.0"
-  },
-  "dependencies": {
-    "unplugin": "^2.0.0"
-  },
-  "keywords": [
-    "icons",
-    "svg",
-    "css",
-    "vue",
-    "nuxt",
-    "vite",
-    "unplugin"
-  ],
+  "keywords": ["icons", "svg", "css", "vue", "nuxt", "vite"],
   "author": "itsOgden",
   "license": "MIT",
   "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a"
